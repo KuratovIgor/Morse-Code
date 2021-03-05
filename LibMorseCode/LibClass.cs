@@ -15,14 +15,12 @@ namespace LibMorseCode
                                                 "....-", ".....", "-....", "--...", "---..", "----.", "-----"};
 
         //Функция проверки коррекстности ввода сообщения на азбуке Морзе
-        private static bool IsMorse()
-        {
+        private static bool IsMorse() {
             int length = _string.Length; //Длина сообщения
             int index = 0;
 
             //Сообщение должно содержать только символы '-', '.' и пробел
-            while (index < length)
-            {
+            while (index < length) {
                 if (_string[index] == '-' || _string[index] == '.' || _string[index] == ' ')
                     index++;
                 else
@@ -33,14 +31,12 @@ namespace LibMorseCode
         }
 
         //Функция проверки коррекстности ввода сообщения на латинице
-        private static bool IsLetter()
-        {
+        private static bool IsLetter() {
             int length = _string.Length; //Длина сообщения
             int index = 0;
 
             //Сообщение должно содержать только буквы латинского алфавита и цифры
-            while (index < length)
-            {
+            while (index < length) {
                 if ((_string[index] >= 'A' && _string[index] <= 'Z') ||
                     (_string[index] >= 'a' && _string[index] <= 'z') ||
                     (_string[index] >= '0' && _string[index] <= '9') ||
