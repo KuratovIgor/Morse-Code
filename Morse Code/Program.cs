@@ -45,6 +45,8 @@ namespace Morse_Code
 
                                     using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
                                         stream.Write(resultString);
+
+                                    Console.WriteLine("The operation was successful! Check the file!");
                                 }
                                 else
                                 {
@@ -66,6 +68,8 @@ namespace Morse_Code
 
                                     using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
                                         stream.Write(resultString);
+
+                                    Console.WriteLine("The operation was successful! Check the file!");
                                 }
                                 else
                                 {
@@ -79,8 +83,6 @@ namespace Morse_Code
                             }
                             break;
                     }
-
-                    Console.WriteLine("The operation was successful! Check the file!");
                 }
             }
             catch (Exception e)
