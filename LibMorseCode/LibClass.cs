@@ -5,18 +5,19 @@ using System.Collections.Generic;
 
 namespace LibMorseCode
 {
-    public class MorseCode {
+    public class MorseCode
+    {
         //Адреса файлов со словарями
         private const String PATH_EN = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\EnglishDictionary.txt"; //Константа, хранящая адрес английского словаря
         private const String PATH_RUS = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\RussianDictionary.txt"; //Константа, хранящая адрес русского словаря
        
-        private static String _string; //Переменная, хранящая сообщение
-        private static String _language; //Язык сообщения
+        private String _string; //Переменная, хранящая сообщение
+        private String _language; //Язык сообщения
        
         //Словарь алфавита
-        private static Dictionary<string, char> alphaviteDictionary = new Dictionary<string, char> { };
+        private Dictionary<string, char> alphaviteDictionary = new Dictionary<string, char> { };
         //Словарь кода Морзе
-        private static Dictionary<char, string> morseDictionary = new Dictionary<char, string> { };
+        private Dictionary<char, string> morseDictionary = new Dictionary<char, string> { };
 
         //Делегат для вывода сообщений об ошибках
         public delegate void ErrorMessage(String textOfError);
@@ -26,8 +27,8 @@ namespace LibMorseCode
         public MorseCode (String language)
         {
             _language = language;
-            String mesFromFile = "", morseCode = "";
-            int index = 2, length = 0;
+            String mesFromFile = null, morseCode = null;
+            int index = 2, length;
 
             //В зависимости от того, какой язык был введен, создаются словари
             switch (_language)
@@ -91,7 +92,7 @@ namespace LibMorseCode
                     break;
                 default:
                     {
-                        Console.WriteLine("Incorrect language!");
+                        Console.WriteLine("Language isn't correct!");
                     }break;
             }
         }
@@ -103,7 +104,7 @@ namespace LibMorseCode
         }
 
         //Функция проверки коррекстности ввода сообщения на азбуке Морзе
-        private static bool IsMorse()
+        private bool IsMorse()
         {
             int length = _string.Length; //Длина сообщения
             int index = 0;
@@ -121,7 +122,7 @@ namespace LibMorseCode
         }
 
         //Функция проверки коррекстности ввода сообщения на латинице
-        private static bool IsLetter() 
+        private bool IsLetter() 
         {
             int length = _string.Length; //Длина сообщения
             int index = 0;
@@ -171,15 +172,16 @@ namespace LibMorseCode
             if (IsLetter() == true)
             {
                 _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
-                _string = _string.ToUpper(); 
-                String resultString = ""; //Результирующая строка в виде сообщения на азбуке Морзе
+                _string = _string.ToUpper(); //Перевод всех символов сообщения в верхний регистр
+
+                String resultString = null; //Результирующая строка в виде сообщения на азбуке Морзе
                 int length = _string.Length; //Длина сообщения
                 int index = 0, //Индекс для итераций в циклах
                     countSpaces = 0; //Количество пробелов
 
                 while (index < length)
                 {
-                    //Перевод символа из сообщения в шифр из азбуки Морзе
+                    //Перевод символа из сообщения в шифр на азбуке Морзе
                     if (_string[index] != ' ' && _string[index] != ',' && _string[index] != '.' &&
                         _string[index] != '!' && _string[index] != '?')
                     {
@@ -211,7 +213,8 @@ namespace LibMorseCode
                     _errorMessage("Letter isn't correct!");
                 else
                     Console.WriteLine("Letter isn't correct!");
-                return "\0";
+
+                return null;
             }
         }
 
@@ -225,8 +228,9 @@ namespace LibMorseCode
             if (IsMorse() == true) 
             {
                 _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
-                String resultString = ""; //Результирующая строка в виде сообщения на азбуке Морзе
-                String shifr = ""; //Строка для хранения шифров символов из азбуки Морзе
+
+                String resultString = null; //Результирующая строка в виде сообщения на азбуке Морзе
+                String shifr = null; //Строка для хранения шифров символов из азбуки Морзе
                 int length = _string.Length; //Длина сообщения
                 int index = 0, //Индекс для итераций в циклах
                     countSpaces = 0; //Количество пробелов
@@ -238,7 +242,7 @@ namespace LibMorseCode
                         shifr += _string[index];
                     else {
                         //Устранение лишних пробелов внутри сообщения
-                        if (shifr == "") {
+                        if (shifr == null) {
                             if (countSpaces > 0)
                             {
                                 index++;
@@ -252,11 +256,11 @@ namespace LibMorseCode
                         {
                             countSpaces = 0;
 
-                            //Перевод шифра из сообщения на азбуке Морзе в символ на латинице
+                            //Перевод шифра из азбуки Морзе в символ на латинице
                             try 
                             {
                                 resultString += alphaviteDictionary[shifr];
-                                shifr = "";
+                                shifr = null;
                             }
                             //Если в сообщение содержится несуществующий шифр, выводим ошибку
                             catch (Exception)
@@ -266,7 +270,7 @@ namespace LibMorseCode
                                 else
                                     Console.WriteLine("Letter isn't correct!");
 
-                                return "\0";
+                                return null;
                                 throw;
                             }
                         }
@@ -278,7 +282,7 @@ namespace LibMorseCode
                 try
                 {
                     resultString += alphaviteDictionary[shifr];
-                    shifr = "";
+                    shifr = null;
                 }
                 //Если в сообщение содержится несуществующий шифр, выводим ошибку
                 catch (Exception)
@@ -288,7 +292,7 @@ namespace LibMorseCode
                     else
                         Console.WriteLine("Letter isn't correct!");
 
-                    return "\0";
+                    return null;
                     throw;
                 }
 
@@ -301,7 +305,7 @@ namespace LibMorseCode
                 else
                     Console.WriteLine("Letter isn't correct!");
 
-                return "\0";
+                return null;
             }
         }
     }
