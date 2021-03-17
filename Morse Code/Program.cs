@@ -6,88 +6,91 @@ namespace Morse_Code
 {
     class Program
     {
+        delegate void ErrorMessage(String message);
+
+        private static void ShowMessage(String textOfError)
+        {
+            Console.WriteLine(textOfError);
+        }
+
         static void Main(string[] args)
         {
-            String stringLetter = "";
-            String resultString = "";
+            const string pathSourse = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\SourseString.txt";
+            const string pathNew = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Result.txt";
 
-            string pathSourse = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\SourseString.txt";
-            string pathNew = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Result.txt";
+            string stringLetter = "";
+            string resultString = "";
+            ErrorMessage errorMes = ShowMessage;
 
             Console.WriteLine("Choose language: [r,e] ");
-            char language;
-            try
+            string language = Console.ReadLine();
+
+            if (language != "e" && language != "r")
             {
-                language = Convert.ToChar(Console.ReadLine());
-
-                if (language != 'e' && language != 'r')
-                {
-                    Console.WriteLine("You can choose only r or e!");
-                }
-                else
-                {
-                    Console.WriteLine("Source string is Morse or Leter? [m/l] ");
-                    char answer = Convert.ToChar(Console.ReadLine());
-
-                    switch (answer)
-                    {
-                        case 'm':
-                            {
-                                using (StreamReader stream = File.OpenText(pathSourse))
-                                    stringLetter = stream.ReadLine();
-
-                                if (stringLetter != null)
-                                {
-                                    if (language == 'e')
-                                        resultString = MorseCode.TranslateToEnLetter(stringLetter);
-                                    if (language == 'r')
-                                        resultString = MorseCode.TranslateToRusLetter(stringLetter);
-
-                                    using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
-                                        stream.Write(resultString);
-
-                                    Console.WriteLine("The operation was successful! Check the file!");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("File is empty!");
-                                }
-                            }
-                            break;
-                        case 'l':
-                            {
-                                using (StreamReader stream = File.OpenText(pathSourse))
-                                    stringLetter = stream.ReadLine();
-
-                                if (stringLetter != null)
-                                {
-                                    if (language == 'e')
-                                        resultString = MorseCode.TranslateToMorseEn(stringLetter);
-                                    if (language == 'r')
-                                        resultString = MorseCode.TranslateToMorseRus(stringLetter);
-
-                                    using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
-                                        stream.Write(resultString);
-
-                                    Console.WriteLine("The operation was successful! Check the file!");
-                                }
-                                else
-                                {
-                                    Console.WriteLine("File is empty!");
-                                }
-                            }
-                            break;
-                        default:
-                            {
-                                Console.WriteLine("You can choose only m or l!");
-                            }
-                            break;
-                    }
-                }
+                errorMes("You can choose only r or e!");
+                Environment.Exit(0);
             }
-            catch (Exception e)
+
+            MorseCode message;
+            if (language == "e")
+                message = new MorseCode("en");
+            else
+                message = new MorseCode("rus");
+
+            message.RegisterErrors(new MorseCode.ErrorMessage(ShowMessage));
+
+            Console.WriteLine("Source string is Morse or Leter? [m/l] ");
+            char answer = Convert.ToChar(Console.ReadLine());
+
+            switch (answer)
             {
-                Console.WriteLine(e.Message);
+                case 'm':
+                    {
+                        using (StreamReader stream = File.OpenText(pathSourse))
+                            stringLetter = stream.ReadLine();
+
+                        if (stringLetter != null)
+                        {
+                            resultString = message.TranslateFromMorse(stringLetter);
+
+                            using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
+                                stream.Write(resultString);
+
+                            if (resultString != "\0")
+                                Console.WriteLine("The operation was successful! Check the file!");
+                        }
+                        else
+                        {
+                            errorMes("File is empty!");
+                        }
+                    }
+                    break;
+                case 'l':
+                    {
+                        using (StreamReader stream = File.OpenText(pathSourse))
+                            stringLetter = stream.ReadLine();
+
+                        if (stringLetter != null)
+                        {
+                            resultString = message.TranslateToMorse(stringLetter);
+
+                            using (StreamWriter stream = new StreamWriter(pathNew, false, System.Text.Encoding.UTF8))
+                                stream.Write(resultString);
+
+                            if (resultString != "\0")
+                                Console.WriteLine("The operation was successful! Check the file!");
+                        }
+                        else
+                        {
+                            errorMes("File is empty!");
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        errorMes("You can choose only m or l!");
+                    }
+                    break;
             }
         }
     }
