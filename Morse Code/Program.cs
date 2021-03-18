@@ -62,6 +62,8 @@ namespace Morse_Code
                     Console.WriteLine("The operation was successful, check the result file.");
                 }
             }
+
+            Console.ReadLine();
         }
 
         private static void ShowMessage(String textOfError)
