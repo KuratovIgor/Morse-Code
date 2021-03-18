@@ -14,14 +14,15 @@ namespace LibMorseCode
         //Адреса файлов со словарями
         private const String PATH_EN = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\EnglishDictionary.txt"; //Константа, хранящая адрес английского словаря
         private const String PATH_RUS = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\RussianDictionary.txt"; //Константа, хранящая адрес русского словаря
-       
+        private const String PATH_TRANSLIT = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Translit.txt";
+
         private String _string; //Переменная, хранящая сообщение
         private String _language; //Язык сообщения
        
         //Словарь алфавита
         private Dictionary<string, char> alphaviteDictionary = new Dictionary<string, char> { };
-        //Словарь кода Морзе
-        private Dictionary<char, string> morseDictionary = new Dictionary<char, string> { };
+        //Словарь кода 
+        private Dictionary<char, string> codeDictionary = new Dictionary<char, string> { };
 
         //Делегат для вывода сообщений об ошибках
         public delegate void ErrorMessage(String textOfError);
@@ -31,7 +32,7 @@ namespace LibMorseCode
         public MorseCode (String language)
         {
             _language = language;
-            String mesFromFile = null, morseCode = null;
+            String mesFromFile = null, code = null;
             int index = 2, length;
 
             //В зависимости от того, какой язык был введен, создаются словари
@@ -52,17 +53,17 @@ namespace LibMorseCode
                                     //Разделение ключа и значения
                                     while (index < length)
                                     {
-                                        morseCode += mesFromFile[index];
+                                        code += mesFromFile[index];
                                         index++;
                                     }
 
                                     //Запись данных в словари
-                                    alphaviteDictionary.Add(morseCode, mesFromFile[0]);
-                                    morseDictionary.Add(mesFromFile[0], morseCode);
+                                    alphaviteDictionary.Add(code, mesFromFile[0]);
+                                    codeDictionary.Add(mesFromFile[0], code);
                                 }
 
                                 index = 2;
-                                morseCode = "";
+                                code = null;
                             }
                         }
                     }break;
@@ -80,16 +81,43 @@ namespace LibMorseCode
 
                                     while (index < length)
                                     {
-                                        morseCode += mesFromFile[index];
+                                        code += mesFromFile[index];
                                         index++;
                                     }
 
-                                    alphaviteDictionary.Add(morseCode, mesFromFile[0]);
-                                    morseDictionary.Add(mesFromFile[0], morseCode);
+                                    alphaviteDictionary.Add(code, mesFromFile[0]);
+                                    codeDictionary.Add(mesFromFile[0], code);
                                 }
 
                                 index = 2;
-                                morseCode = "";
+                                code = null;
+                            }
+                        }
+                    }
+                    break;
+                case "translit":
+                    {
+                        using (StreamReader fileStream = File.OpenText(PATH_TRANSLIT))
+                        {
+                            while (mesFromFile != "///")
+                            {
+                                mesFromFile = fileStream.ReadLine();
+
+                                if (mesFromFile != "///")
+                                {
+                                    length = mesFromFile.Length;
+
+                                    while (index < length)
+                                    {
+                                        code += mesFromFile[index];
+                                        index++;
+                                    }
+
+                                    codeDictionary.Add(mesFromFile[0], code);
+                                }
+
+                                index = 2;
+                                code = null;
                             }
                         }
                     }
@@ -107,8 +135,8 @@ namespace LibMorseCode
             _errorMessage = errorMessage;
         }
 
-        //Функция проверки коррекстности ввода сообщения на азбуке Морзе
-        private bool IsMorse()
+        //Функция проверки коррекстности ввода шифра
+        private bool IsCode()
         {
             int length = _string.Length; //Длина сообщения
             int index = 0;
@@ -125,7 +153,7 @@ namespace LibMorseCode
             return true;
         }
 
-        //Функция проверки коррекстности ввода сообщения на латинице
+        //Функция проверки коррекстности ввода сообщения 
         private bool IsLetter() 
         {
             int length = _string.Length; //Длина сообщения
@@ -162,12 +190,29 @@ namespace LibMorseCode
                         return false;
                 }
             }
+            if (_language == "translit")
+            {
+                while (index < length)
+                {
+                    if ((_string[index] >= 'A' && _string[index] <= 'Z') ||
+                        (_string[index] >= 'a' && _string[index] <= 'z') ||
+                        (_string[index] >= 'А' && _string[index] <= 'Я') ||
+                        (_string[index] >= 'а' && _string[index] <= 'я') ||
+                        (_string[index] >= '0' && _string[index] <= '9') ||
+                        (_string[index] == ',' || _string[index] == '.') ||
+                        (_string[index] == '?' || _string[index] == '!') ||
+                        _string[index] == ' ')
+                        index++;
+                    else
+                        return false;
+                }
+            }
             
             return true;
         }
 
-        //Функция шифрования сообщения в код Морзе
-        public String TranslateToMorse(String stringLetter)
+        //Функция шифрования сообщения 
+        public String Code(String stringLetter)
         { 
             //stringLetter - введённое сообщение
             _string = stringLetter;
@@ -178,32 +223,68 @@ namespace LibMorseCode
                 _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
                 _string = _string.ToUpper(); //Перевод всех символов сообщения в верхний регистр
 
-                String resultString = null; //Результирующая строка в виде сообщения на азбуке Морзе
+                String resultString = null; //Результирующая строка в виде шифра
                 int length = _string.Length; //Длина сообщения
                 int index = 0, //Индекс для итераций в циклах
                     countSpaces = 0; //Количество пробелов
 
                 while (index < length)
                 {
-                    //Перевод символа из сообщения в шифр на азбуке Морзе
-                    if (_string[index] != ' ' && _string[index] != ',' && _string[index] != '.' &&
-                        _string[index] != '!' && _string[index] != '?')
+                    if (_language != "translit")
                     {
-                        resultString += morseDictionary[_string[index]];
-                        resultString += " ";
-                        countSpaces = 0;
+                        //Перевод символа из сообщения в шифр 
+                        if (_string[index] != ' ' && _string[index] != ',' && _string[index] != '.' &&
+                            _string[index] != '!' && _string[index] != '?')
+                        {
+                            resultString += codeDictionary[_string[index]];
+                            resultString += " ";
+                            countSpaces = 0;
+                        }
+                        //Устранение лишних пробелов внутри сообщения
+                        else
+                        {
+                            if (countSpaces > 0)
+                            {
+                                index++;
+                                continue;
+                            }
+
+                            resultString += "  ";
+                            countSpaces++;
+                        }
                     }
-                    //Устранение лишних пробелов внутри сообщения
                     else
                     {
-                        if (countSpaces > 0) 
+                        try
                         {
-                            index++;
-                            continue;
-                        }
+                            //Перевод символа из сообщения в код из транслита
+                            if (_string[index] != ' ' && codeDictionary[_string[index]] != " ")
+                            {
+                                resultString += codeDictionary[_string[index]];
+                                countSpaces = 0;
+                            }
+                            //Устранение лишних пробелов внутри сообщения
+                            else
+                            {
+                                if (countSpaces > 0)
+                                {
+                                    index++;
+                                    continue;
+                                }
 
-                        resultString += "  ";
-                        countSpaces++;
+                                resultString += " ";
+                                countSpaces++;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            if (_errorMessage != null)
+                                _errorMessage("Letter isn't correct!");
+                            else
+                                Console.WriteLine("Letter isn't correct!");
+
+                            return null;
+                        }
                     }
 
                     index++;
@@ -222,19 +303,19 @@ namespace LibMorseCode
             }
         }
 
-        //Функция расшифровки кода Морзе
-        public String TranslateFromMorse(String stringMorse) 
+        //Функция расшифровки кода
+        public String Decode(String stringMorse) 
         {
             //stringLetter - введённое сообщение
             _string = stringMorse;
 
             //Если сообщение введено корректно (только '-' и '.'), выполняем перевод
-            if (IsMorse() == true) 
+            if (IsCode() == true) 
             {
                 _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
 
                 String resultString = null; //Результирующая строка в виде сообщения на азбуке Морзе
-                String shifr = null; //Строка для хранения шифров символов из азбуки Морзе
+                String shifr = null; //Строка для хранения шифров 
                 int length = _string.Length; //Длина сообщения
                 int index = 0, //Индекс для итераций в циклах
                     countSpaces = 0; //Количество пробелов
@@ -260,7 +341,7 @@ namespace LibMorseCode
                         {
                             countSpaces = 0;
 
-                            //Перевод шифра из азбуки Морзе в символ на латинице
+                            //Перевод шифра в символ на латинице
                             try 
                             {
                                 resultString += alphaviteDictionary[shifr];
