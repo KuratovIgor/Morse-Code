@@ -24,9 +24,7 @@
 Ч CH
 Ш SH
 Щ SHCH
-Ъ  
 Ы Y
-Ь  
 Э E
 Ю YU
 Я YA
