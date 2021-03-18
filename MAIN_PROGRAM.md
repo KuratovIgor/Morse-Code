@@ -18,7 +18,13 @@ namespace Morse_Code
             string stringLetter = null, resultString = null;
 
             using (StreamReader stream = File.OpenText(PATH_SOURSE))
-                stringLetter = stream.ReadLine();
+            {               
+                while (stream.Peek() != -1)
+                {
+                    stringLetter += stream.ReadLine();
+                    stringLetter += "\n";
+                }
+            }
 
             if (stringLetter == null)
             {
@@ -68,4 +74,5 @@ namespace Morse_Code
         }
     }
 }
+
 ```
