@@ -22,28 +22,29 @@ namespace Morse_Code
                 Environment.Exit(0);
             }
 
-            Console.WriteLine("Choose language: [r,e] ");
+            Console.WriteLine("Choose language (russian, english, translit): [r/e/t]");
             string language = Console.ReadLine();
 
-            if (language != "e" && language != "r")
+            if (language != "e" && language != "r" && language != "t")
             {
-                Console.WriteLine("You can choose only r or e!");
+                Console.WriteLine("You can choose only r or e or t!");
             } 
             else
             {
                 if (language == "e") language = "en";
                 if (language == "r") language = "rus";
+                if (language == "t") language = "translit";
 
                 MorseCode message = new MorseCode(language);
                 message.RegisterErrors(new MorseCode.ErrorMessage(ShowMessage));
 
-                Console.WriteLine("Source string is Morse or Leter? [m/l] ");
+                Console.WriteLine("Source string is Code or Leter? [c/l] ");
                 char answer = Convert.ToChar(Console.ReadLine());
 
-                if (answer == 'm')
-                    resultString = message.TranslateFromMorse(stringLetter);
+                if (answer == 'c')
+                    resultString = message.Decode(stringLetter);
                 else if (answer == 'l')
-                    resultString = message.TranslateToMorse(stringLetter);
+                    resultString = message.Code(stringLetter);
                 else
                     Console.WriteLine("You can choose only m or l!");
 
