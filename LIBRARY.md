@@ -26,7 +26,7 @@ namespace LibMorseCode
 
         //Делегат для вывода сообщений об ошибках
         public delegate void ErrorMessage(String textOfError);
-        ErrorMessage _errorMessage;
+        public event ErrorMessage NotifyError;
         
         //Конструктор
         public MorseCode (String language)
@@ -85,12 +85,6 @@ namespace LibMorseCode
                     code = null;
                 }
             }
-        }
-
-        //Функция получения метода с выводом ошибки
-        public void RegisterErrors(ErrorMessage errorMessage)
-        {
-            _errorMessage = errorMessage;
         }
 
         //Функция проверки коррекстности ввода шифра
@@ -223,8 +217,8 @@ namespace LibMorseCode
             }
             else
             {
-                if (_errorMessage != null)
-                    _errorMessage("Letter isn't correct!");
+                if (NotifyError != null)
+                    NotifyError("Letter isn't correct!");
                 else
                     Console.WriteLine("Letter isn't correct!");
 
@@ -288,8 +282,8 @@ namespace LibMorseCode
                             //Если в сообщение содержится несуществующий шифр, выводим ошибку
                             catch (Exception)
                             {
-                                if (_errorMessage != null)
-                                    _errorMessage("Letter isn't correct!");
+                                if (NotifyError != null)
+                                    NotifyError("Letter isn't correct!");
                                 else
                                     Console.WriteLine("Letter isn't correct!");
 
@@ -310,8 +304,8 @@ namespace LibMorseCode
                 //Если в сообщение содержится несуществующий шифр, выводим ошибку
                 catch (Exception)
                 {                    
-                    if (_errorMessage != null)
-                        _errorMessage("Letter isn't correct!");
+                    if (NotifyError != null)
+                        NotifyError("Letter isn't correct!");
                     else
                         Console.WriteLine("Letter isn't correct!");
 
@@ -322,8 +316,8 @@ namespace LibMorseCode
             }
             else 
             {
-                if (_errorMessage != null)
-                    _errorMessage("Letter isn't correct!");
+                if (NotifyError != null)
+                    NotifyError("Letter isn't correct!");
                 else
                     Console.WriteLine("Letter isn't correct!");
 
