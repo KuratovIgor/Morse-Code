@@ -46,7 +46,7 @@ namespace Morse_Code
                 if (language == "t") language = "translit";
 
                 MorseCode message = new MorseCode(language);
-                message.RegisterErrors(new MorseCode.ErrorMessage(ShowMessage));
+                message.NotifyError += ShowMessage;
 
                 Console.WriteLine("Source string is Code or Leter? [c/l] ");
                 char answer = Convert.ToChar(Console.ReadLine());
@@ -66,7 +66,7 @@ namespace Morse_Code
                     Console.WriteLine("The operation was successful, check the result file.");
                 }
             }
-            
+
             Console.ReadLine();
         }
 
@@ -76,5 +76,4 @@ namespace Morse_Code
         }
     }
 }
-
 ```
