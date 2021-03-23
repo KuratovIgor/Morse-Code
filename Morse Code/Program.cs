@@ -1,26 +1,39 @@
-﻿using System;
-using LibMorseCode;
+using System;
 using System.IO;
+using LibMorseCode;
 
 namespace Morse_Code
 {
     class Program
     {
+        public static object CodePagesEncodingProvider { get; private set; }
+
         static void Main(string[] args)
         {
-            const string PATH_SOURSE = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\SourseString.txt";
-            const string PATH_RESULT = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Result.txt";
-
             string stringLetter = null, resultString = null;
 
-            using (StreamReader stream = File.OpenText(PATH_SOURSE))
-            {               
-                while (stream.Peek() != -1)
+            Console.WriteLine("Введите путь файла с текстом:");
+            string path_sourse = Console.ReadLine();
+            Console.WriteLine("Введите путь, по которому нужно записать результат:");
+            string path_result = Console.ReadLine();
+
+            try
+            {
+                using (StreamReader stream = File.OpenText(path_sourse))
                 {
-                    stringLetter += stream.ReadLine();
-                    stringLetter += "\n";
+                    while (stream.Peek() != -1)
+                    {
+                        stringLetter += stream.ReadLine();
+                        stringLetter += "\n";
+                    }
                 }
             }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("Not file!");
+                Environment.Exit(0);
+            }
+            
 
             if (stringLetter == null)
             {
@@ -34,7 +47,7 @@ namespace Morse_Code
             if (language != "e" && language != "r" && language != "t")
             {
                 Console.WriteLine("You can choose only r or e or t!");
-            } 
+            }
             else
             {
                 if (language == "e") language = "en";
@@ -56,7 +69,7 @@ namespace Morse_Code
 
                 if (resultString != null)
                 {
-                    using (StreamWriter stream = new StreamWriter(PATH_RESULT, false, System.Text.Encoding.UTF8))
+                    using (StreamWriter stream = new StreamWriter(path_result, false, System.Text.Encoding.UTF8))
                         stream.Write(resultString);
 
                     Console.WriteLine("The operation was successful, check the result file.");
