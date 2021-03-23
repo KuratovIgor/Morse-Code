@@ -6,8 +6,6 @@ namespace Morse_Code
 {
     class Program
     {
-        public static object CodePagesEncodingProvider { get; private set; }
-
         static void Main(string[] args)
         {
             string stringLetter = null, resultString = null;
