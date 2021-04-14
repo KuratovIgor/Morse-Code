@@ -54,27 +54,24 @@ namespace LibMorseCode
 
             using (StreamReader fileStream = File.OpenText(path)) //Создание файлового потока для чтения
             {
-                while (mesFromFile != "///") // /// - конец словаря
+                while (fileStream.Peek() != -1) // /// - конец словаря
                 {
                     mesFromFile = fileStream.ReadLine();
 
-                    if (mesFromFile != "///")
-                    {
-                        length = mesFromFile.Length;
+                    length = mesFromFile.Length;
                          
-                        //Раздаление ключа и значения словаря
-                        while (index < length)
-                        {
-                            code += mesFromFile[index];
-                            index++;
-                        }
-
-                        //Запись данных в словарь
-                        if (_language != "translit")
-                            alphaviteDictionary.Add(code, mesFromFile[0]);
-
-                        codeDictionary.Add(mesFromFile[0], code);
+                    //Разделение ключа и значения
+                    while (index < length)
+                    {
+                        code += mesFromFile[index];
+                        index++;
                     }
+
+                    //Запись данных в словарь
+                    if (_language != "translit")
+                        alphaviteDictionary.Add(code, mesFromFile[0]);
+
+                    codeDictionary.Add(mesFromFile[0], code);
 
                     index = 2;
                     code = null;
@@ -104,6 +101,7 @@ namespace LibMorseCode
                     (symbol == ' '))
                     return true;
             }
+
             if (_language == "rus")
             {
                 if ((symbol >= 'А' && symbol <= 'Я') ||
@@ -112,20 +110,10 @@ namespace LibMorseCode
                     (symbol == ' '))
                     return true;
             }
+
             if (_language == "translit")
-            {
-                string temp = null;
-                try
-                {
-                    temp = codeDictionary[symbol];
+                if (codeDictionary.ContainsKey(symbol) || symbol == ' ') 
                     return true;
-                }
-                catch (Exception)
-                {
-                    if (symbol == ' ')
-                        return true;
-                }
-            }
             
             return false;
         }
@@ -143,25 +131,23 @@ namespace LibMorseCode
         public string Code(char stringLetter)
         {
             stringLetter = CharToUpper(stringLetter); //Перевод символа в верхний регистр
-            string resultString = null;
 
             //Если символ введен корректно, выполняем перевод
             if (IsLetter(stringLetter) == true)
             {
                 //Перевод символа в шифр 
-                try
+                if (codeDictionary.ContainsKey(stringLetter))
                 {
-                    resultString = codeDictionary[stringLetter];
-
                     if (_language != "translit")
-                        resultString += " ";
-
-                    return resultString;
-                }
-                catch (Exception) 
+                        return codeDictionary[stringLetter] + " ";
+                    
+                    return codeDictionary[stringLetter];
+                }                  
+                else
                 {
                     if (stringLetter == '\n')
                         return "\n";
+
                     //Если на вход попал пробел, возвращаем больший отступ между шифрами
                     if (stringLetter == ' ')
                         return "   ";
@@ -182,22 +168,15 @@ namespace LibMorseCode
             if (IsCode(shifr[0]) == true)
             {
                 if (shifr[0] == ' ')
-                {
                     return ' ';
-                }
 
                 if (shifr == "\n")
-                {
                     return '\n';
-                }
 
                 //Перевод шифра в символ
-                try 
-                {
+                if (alphaviteDictionary.ContainsKey(shifr))
                     return alphaviteDictionary[shifr];
-                }
-                //Если введен несуществующий шифр, выводим ошибку
-                catch (Exception)
+                else
                 {
                     if (NotifyError != null)
                         NotifyError("Invalid code!");
