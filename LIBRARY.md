@@ -14,9 +14,8 @@ namespace LibMorseCode
         //Адреса файлов со словарями
         private const string PATH_EN = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\EnglishDictionary.txt"; //Константа, хранящая адрес английского словаря
         private const string PATH_RUS = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\RussianDictionary.txt"; //Константа, хранящая адрес русского словаря
-        private const string PATH_TRANSLIT = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Translit.txt";
+        private const string PATH_TRANSLIT = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Translit.txt"; //Константа, хранящая адрес словаря с транслитом
 
-        private string _string; //Переменная, хранящая сообщение
         private string _language; //Язык сообщения
        
         //Словарь алфавита
@@ -25,7 +24,7 @@ namespace LibMorseCode
         private Dictionary<char, string> codeDictionary = new Dictionary<char, string> { };
 
         //Делегат для вывода сообщений об ошибках
-        public delegate void ErrorMessage(String textOfError);
+        public delegate void ErrorMessage(string textOfError);
         public event ErrorMessage NotifyError;
         
         //Конструктор
@@ -88,240 +87,133 @@ namespace LibMorseCode
         }
 
         //Функция проверки коррекстности ввода шифра
-        private bool IsCode()
-        {
-            int length = _string.Length; //Длина сообщения
-            int index = 0;
-
+        private bool IsCode(char symbol)
+        { 
             //Сообщение должно содержать только символы '-', '.' и пробел
-            while (index < length)
-            {
-                if (_string[index] == '-' || _string[index] == '.' || _string[index] == ' ' || _string[index] == '\n')
-                    index++;
-                else
-                    return false;
-            }
-
-            return true;
+            if (symbol == '-' || symbol == '.' || symbol == ' ' || symbol == '\n')
+                return true;
+            else
+                return false;
         }
 
         //Функция проверки коррекстности ввода сообщения 
-        private bool IsLetter() 
+        private bool IsLetter(char symbol) 
         {
-            int length = _string.Length; //Длина сообщения
-            int index = 0;
-
             //Сообщение должно содержать только буквы латинского или русского алфавита и цифры
             if (_language == "en")
             {
-                while (index < length)
-                {
-                    if ((_string[index] >= 'A' && _string[index] <= 'Z') ||
-                        (_string[index] >= 'a' && _string[index] <= 'z') ||
-                        (_string[index] >= '0' && _string[index] <= '9'))
-                        return true;
-
-                    index++;
-                }
+                if ((symbol >= 'A' && symbol <= 'Z') ||
+                    (symbol >= 'a' && symbol <= 'z') ||
+                    (symbol >= '0' && symbol <= '9') ||
+                    (symbol == ' '))
+                    return true;
             }
             if (_language == "rus")
             {
-                while (index < length)
-                {
-                    if ((_string[index] >= 'А' && _string[index] <= 'Я') ||
-                        (_string[index] >= 'а' && _string[index] <= 'я') ||
-                        (_string[index] >= '0' && _string[index] <= '9'))
-                        return true;
-
-                    index++;
-                }
+                if ((symbol >= 'А' && symbol <= 'Я') ||
+                    (symbol >= 'а' && symbol <= 'я') ||
+                    (symbol >= '0' && symbol <= '9') ||
+                    (symbol == ' '))
+                    return true;
             }
             if (_language == "translit")
             {
                 string temp = null;
-                while (index < length)
+                try
                 {
-                    try
-                    {
-                        temp = codeDictionary[_string[index]];
+                    temp = codeDictionary[symbol];
+                    return true;
+                }
+                catch (Exception)
+                {
+                    if (symbol == ' ')
                         return true;
-                    }
-                    catch (Exception) { }
-
-                    index++;
                 }
             }
             
             return false;
         }
 
+        //Функция перевода в верхний регистр
+        private char CharToUpper(char symbol)
+        {
+            if ((symbol >= 'a' && symbol <= 'z') || (symbol >= 'а' && symbol <= 'я'))
+                return (char)(symbol - ' ');
+            else
+                return symbol;
+        }
+
         //Функция шифрования сообщения 
-        public String Code(String stringLetter)
-        { 
-            //stringLetter - введённое сообщение
-            _string = stringLetter;
+        public string Code(char stringLetter)
+        {
+            stringLetter = CharToUpper(stringLetter); //Перевод символа в верхний регистр
+            string resultString = null;
 
-            _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
-            _string = _string.ToUpper(); //Перевод всех символов сообщения в верхний регистр
-
-            //Если сообщение введено корректно, выполняем перевод
-            if (IsLetter() == true)
+            //Если символ введен корректно, выполняем перевод
+            if (IsLetter(stringLetter) == true)
             {
-                String resultString = null; //Результирующая строка в виде шифра
-                int length = _string.Length; //Длина сообщения
-                int index = 0, //Индекс для итераций в циклах
-                    countSpaces = 0; //Количество пробелов
-
-                while (index < length)
+                //Перевод символа в шифр 
+                try
                 {
-                    //Перевод символа из сообщения в шифр 
-                    if (_string[index] != ' ')
-                    {
-                        try
-                        {
-                            resultString += codeDictionary[_string[index]];
+                    resultString = codeDictionary[stringLetter];
 
-                            if (_language != "translit") 
-                                resultString += " ";
+                    if (_language != "translit")
+                        resultString += " ";
 
-                            countSpaces = 0;
-                        }
-                        //Если встречается символ переноса строки, этот символ заносится в результирующую строку
-                        catch (Exception) 
-                        {
-                            if (_string[index] == '\n')
-                                resultString += "\n";
-                        }
-                    }
-                    //Устранение лишних пробелов внутри сообщения
-                    else
-                    {
-                        if (countSpaces > 0)
-                        {
-                            index++;
-                            continue;
-                        }
-
-                        if (_language != "translit")
-                            resultString += "  ";
-                        else
-                            resultString += " ";
-
-                        countSpaces++;
-                    }
-
-                    index++;
+                    return resultString;
                 }
+                catch (Exception) 
+                {
+                    if (stringLetter == '\n')
+                        return "\n";
+                    //Если на вход попал пробел, возвращаем больший отступ между шифрами
+                    if (stringLetter == ' ')
+                        return "   ";
 
-                return resultString;
+                    return null;
+                }
             }
             else
             {
-                if (NotifyError != null)
-                    NotifyError("Letter isn't correct!");
-                else
-                    Console.WriteLine("Letter isn't correct!");
-
                 return null;
             }
         }
 
         //Функция расшифровки кода
-        public String Decode(String stringMorse) 
+        public char Decode(string shifr) 
         {
-            //stringLetter - введённое сообщение
-            _string = stringMorse;
-
             //Если сообщение введено корректно (только '-' и '.'), выполняем перевод
-            if (IsCode() == true) 
+            if (IsCode(shifr[0]) == true)
             {
-                _string = _string.Trim(); //Удаление пробелов спереди и в конце сообщения
-
-                String resultString = null; //Результирующая строка в виде сообщения на азбуке Морзе
-                String shifr = null; //Строка для хранения шифров 
-                int length = _string.Length; //Длина сообщения
-                int index = 0, //Индекс для итераций в циклах
-                    countSpaces = 0; //Количество пробелов
-
-                while (index < length)
+                if (shifr[0] == ' ')
                 {
-                    //Считываение шифра
-                    if (_string[index] != ' ')
-                    {
-                        shifr += _string[index];
-
-                        //Если встречается символ переноса строки, этот символ заносится в результирующую строку
-                        if (shifr == "\n")
-                        {
-                            resultString += "\n";
-                            shifr = null;
-                        }
-                    }
-                    else {
-                        //Устранение лишних пробелов внутри сообщения
-                        if (shifr == null) {
-                            if (countSpaces > 0)
-                            {
-                                index++;
-                                continue;
-                            }
-
-                            resultString += " ";
-                            countSpaces++;
-                        }
-                        else
-                        {
-                            countSpaces = 0;
-
-                            //Перевод шифра в символ на латинице
-                            try 
-                            {
-                                resultString += alphaviteDictionary[shifr];
-                                shifr = null;
-                            }
-                            //Если в сообщение содержится несуществующий шифр, выводим ошибку
-                            catch (Exception)
-                            {
-                                if (NotifyError != null)
-                                    NotifyError("Letter isn't correct!");
-                                else
-                                    Console.WriteLine("Letter isn't correct!");
-
-                                return null;
-                            }
-                        }
-                    }
-                    
-                    index++;
+                    return ' ';
                 }
 
-                //Считывание последнего шифра в записи
-                try
+                if (shifr == "\n")
                 {
-                    resultString += alphaviteDictionary[shifr];
-                    shifr = null;
+                    return '\n';
                 }
-                //Если в сообщение содержится несуществующий шифр, выводим ошибку
+
+                //Перевод шифра в символ
+                try 
+                {
+                    return alphaviteDictionary[shifr];
+                }
+                //Если введен несуществующий шифр, выводим ошибку
                 catch (Exception)
-                {                    
+                {
                     if (NotifyError != null)
-                        NotifyError("Letter isn't correct!");
+                        NotifyError("Invalid code!");
                     else
-                        Console.WriteLine("Letter isn't correct!");
+                        Console.WriteLine("Invalid code!");
 
-                    return null;
+                    return '\0';
                 }
-                    
-                return resultString;
             }
             else 
             {
-                if (NotifyError != null)
-                    NotifyError("Letter isn't correct!");
-                else
-                    Console.WriteLine("Letter isn't correct!");
-
-                return null;
+                return '\0';
             }
         }
     }
