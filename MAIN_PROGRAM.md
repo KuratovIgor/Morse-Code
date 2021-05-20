@@ -12,36 +12,18 @@ namespace Morse_Code
     {
         static void Main(string[] args)
         {
-            string stringLetter = null, resultString = null;
+            //C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\SourseString.txt
 
-            Console.WriteLine("Введите путь файла с текстом:");
-            string path_sourse = Console.ReadLine();
-            Console.WriteLine("Введите путь, по которому нужно записать результат:");
+            string stringCode = null, //Хранит шифр
+                resultString = null; //Хранит результат
+            char bufString = '\0'; //строка буфер для посимвольного считывания шифра из файла
+            bool isMessageExist = false; //Проверка на то, есть ли сообщение в исходном файле
+            int countProbel = 0; //Количество пробелов
+
+            Console.WriteLine("Enter path of file with message:");
+            string path_source = Console.ReadLine();
+            Console.WriteLine("Enter path of result file:");
             string path_result = Console.ReadLine();
-
-            try
-            {
-                using (StreamReader stream = File.OpenText(path_sourse))
-                {
-                    while (stream.Peek() != -1)
-                    {
-                        stringLetter += stream.ReadLine();
-                        stringLetter += "\n";
-                    }
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                Console.WriteLine("Not file!");
-                Environment.Exit(0);
-            }
-            
-
-            if (stringLetter == null)
-            {
-                Console.WriteLine("File is empty!");
-                Environment.Exit(0);
-            }
 
             Console.WriteLine("Choose language (russian, english, translit): [r/e/t]");
             string language = Console.ReadLine();
@@ -56,31 +38,75 @@ namespace Morse_Code
                 if (language == "r") language = "rus";
                 if (language == "t") language = "translit";
 
+                //Создаем объект для шифровния/дешифрования в зависимости от выбранного языка сообщения
                 MorseCode message = new MorseCode(language);
                 message.NotifyError += ShowMessage;
 
-                Console.WriteLine("Source string is Code or Leter? [c/l] ");
+                Console.WriteLine("Source string is Code or Letter? [c/l] ");
                 char answer = Convert.ToChar(Console.ReadLine());
 
-                if (answer == 'c')
-                    resultString = message.Decode(stringLetter);
-                else if (answer == 'l')
-                    resultString = message.Code(stringLetter);
-                else
-                    Console.WriteLine("You can choose only c or l!");
+                //Файл с результатом будем всегда перезаписывать
+                using (StreamWriter streamWrite = new StreamWriter(path_result, false, System.Text.Encoding.UTF8)) { } 
 
-                if (resultString != null)
+                using (StreamReader streamRead = File.OpenText(path_source))
                 {
-                    using (StreamWriter stream = new StreamWriter(path_result, false, System.Text.Encoding.UTF8))
-                        stream.Write(resultString);
+                    while (streamRead.Peek() != -1) //Работаем с исходным файлом, пока не дойдем до его конца
+                    {
+                        isMessageExist = true;  
 
-                    Console.WriteLine("The operation was successful, check the result file.");
+                        if (answer == 'c') 
+                        {
+                            while (bufString != ' ') //Считываем символы, пока не получим шифр
+                            {
+                                bufString = (char)streamRead.Read();
+
+                                if (bufString == '\uffff') //Конец файла сообщения
+                                    break;
+
+                                //Ведем подсчет пробелов для разделения слов в сообщении
+                                if (bufString != ' ') 
+                                    countProbel = 0;
+                                else
+                                    countProbel++;
+
+                                //Запись кода
+                                if (bufString != ' ')
+                                    stringCode += bufString;
+                            }
+
+                            //Дешифрация кода
+                            if (stringCode != null)
+                                resultString = Convert.ToString(message.Decode(stringCode));
+
+                            //Разделение слов между друг другом
+                            if (countProbel == 2)
+                                resultString = Convert.ToString(message.Decode(Convert.ToString(bufString)));
+
+                            stringCode = null;
+                            bufString = '\0';
+                        }
+                        else if (answer == 'l')
+                            //шифрование символа из сообщения
+                            resultString = message.Code((char)streamRead.Read());
+                        else
+                            Console.WriteLine("You can choose only c or l!");
+
+                        //запись результата в файл
+                        using (StreamWriter streamWrite = new StreamWriter(path_result, true, System.Text.Encoding.UTF8))
+                            streamWrite.Write(resultString);
+                    }
                 }
+
+                if (isMessageExist == true)
+                    Console.WriteLine("Check the result file.");
+                else
+                    Console.WriteLine("File is empty!");
             }
 
             Console.ReadLine();
         }
-
+        
+        //Функция вывода сообщения об ошибках
         private static void ShowMessage(String textOfError)
         {
             Console.WriteLine(textOfError);
