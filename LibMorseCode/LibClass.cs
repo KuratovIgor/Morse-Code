@@ -8,188 +8,151 @@ namespace LibMorseCode
     public class MorseCode
     {
         //Адреса файлов со словарями
-        private const string PATH_EN = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\EnglishDictionary.txt"; //Константа, хранящая адрес английского словаря
-        private const string PATH_RUS = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\RussianDictionary.txt"; //Константа, хранящая адрес русского словаря
-        private const string PATH_TRANSLIT = @"C:\Users\kurat\source\repos\Разработка ПМ\Morse Code\Translit.txt"; //Константа, хранящая адрес словаря с транслитом
+        private const string PATH_EN = @"C:\Users\kurat\source\repos\Morse Code\LibMorseCode\EnglishDictionary.txt"; //Константа, хранящая адрес английского словаря
+        private const string PATH_RUS = @"C:\Users\kurat\source\repos\Morse Code\LibMorseCode\RussianDictionary.txt"; //Константа, хранящая адрес русского словаря
+        private const string PATH_TRANSLIT = @"C:\Users\kurat\source\repos\Morse Code\LibMorseCode\Translit.txt"; //Константа, хранящая адрес словаря с транслитом
 
         private string _language; //Язык сообщения
+        private char _symbol; //Символ, который нужно перевести
+        private string _shifr; //Шифр кода Морзе, который нужно перевести
        
         //Словарь алфавита
         private Dictionary<string, char> alphaviteDictionary = new Dictionary<string, char> { };
         //Словарь кода 
         private Dictionary<char, string> codeDictionary = new Dictionary<char, string> { };
 
-        //Делегат для вывода сообщений об ошибках
         public delegate void ErrorMessage(string textOfError);
         public event ErrorMessage NotifyError;
         
-        //Конструктор
-        public MorseCode (String language)
+        public MorseCode (string language)
         {
             _language = language;
 
+            if (_language != "en" && _language != "rus" && _language != "translit")
+                Console.WriteLine("Language isn't correct!");
+
             //В зависимости от того, какой язык был введен, создаются словари
-            switch (_language)
-            {
-               case "en":
-                        CreateDictionary(PATH_EN);
-                    break;
-                case "rus":
-                        CreateDictionary(PATH_RUS);
-                    break;
-                case "translit":
-                        CreateDictionary(PATH_TRANSLIT);
-                    break;
-                default:
-                        Console.WriteLine("Language isn't correct!");
-                    break;
-            }
+            if (_language == "en")
+                CreateDictionary(PATH_EN);
+
+            if (_language == "rus")
+                CreateDictionary(PATH_RUS);
+
+            if (_language == "translit")
+                CreateDictionary(PATH_TRANSLIT);
         }
 
         //Функция создания словаря
         private void CreateDictionary (string path)
         {
-            String mesFromFile = null, code = null;
-            int index = 2, length;
+            string lineFromFile;
 
-            using (StreamReader fileStream = File.OpenText(path)) //Создание файлового потока для чтения
+            using (StreamReader fileStream = File.OpenText(path)) 
             {
-                while (fileStream.Peek() != -1) // /// - конец словаря
+                while (fileStream.Peek() != -1) 
                 {
-                    mesFromFile = fileStream.ReadLine();
-
-                    length = mesFromFile.Length;
-                         
-                    //Разделение ключа и значения
-                    while (index < length)
-                    {
-                        code += mesFromFile[index];
-                        index++;
-                    }
+                    lineFromFile = fileStream.ReadLine();
 
                     //Запись данных в словарь
                     if (_language != "translit")
-                        alphaviteDictionary.Add(code, mesFromFile[0]);
+                        alphaviteDictionary.Add(lineFromFile.Substring(1, lineFromFile.Length - 1), lineFromFile[0]);
 
-                    codeDictionary.Add(mesFromFile[0], code);
-
-                    index = 2;
-                    code = null;
+                    codeDictionary.Add(lineFromFile[0], lineFromFile.Substring(1, lineFromFile.Length - 1));
                 }
             }
         }
 
         //Функция проверки коррекстности ввода шифра
-        private bool IsCode(char symbol)
+        private bool IsCode()
         { 
             //Сообщение должно содержать только символы '-', '.' и пробел
-            if (symbol == '-' || symbol == '.' || symbol == ' ' || symbol == '\n')
+            if (_shifr[0] == '-' || _shifr[0] == '.' || _shifr[0] == ' ' || _shifr[0] == '\n')
                 return true;
-            else
-                return false;
-        }
-
-        //Функция проверки коррекстности ввода сообщения 
-        private bool IsLetter(char symbol) 
-        {
-            //Сообщение должно содержать только буквы латинского или русского алфавита и цифры
-            if (_language == "en")
-            {
-                if ((symbol >= 'A' && symbol <= 'Z') ||
-                    (symbol >= 'a' && symbol <= 'z') ||
-                    (symbol >= '0' && symbol <= '9') ||
-                    (symbol == ' '))
-                    return true;
-            }
-
-            if (_language == "rus")
-            {
-                if ((symbol >= 'А' && symbol <= 'Я') ||
-                    (symbol >= 'а' && symbol <= 'я') ||
-                    (symbol >= '0' && symbol <= '9') ||
-                    (symbol == ' '))
-                    return true;
-            }
-
-            if (_language == "translit")
-                if (codeDictionary.ContainsKey(symbol) || symbol == ' ') 
-                    return true;
             
             return false;
         }
 
-        //Функция перевода в верхний регистр
-        private char CharToUpper(char symbol)
+        //Функция проверки коррекстности ввода сообщения 
+        private bool IsLetter() 
         {
-            if ((symbol >= 'a' && symbol <= 'z') || (symbol >= 'а' && symbol <= 'я'))
-                return (char)(symbol - ' ');
-            else
-                return symbol;
+            //Сообщение должно содержать только буквы латинского или русского алфавита и цифры
+            if (_language == "en" && 
+                   ((_symbol >= 'A' && _symbol <= 'Z') ||
+                    (_symbol >= 'a' && _symbol <= 'z') ||
+                    (_symbol >= '0' && _symbol <= '9') ||
+                    (_symbol == ' ')))
+                    return true;
+
+            if (_language == "rus" &&
+                   ((_symbol >= 'А' && _symbol <= 'Я') ||
+                    (_symbol >= 'а' && _symbol <= 'я') ||
+                    (_symbol >= '0' && _symbol <= '9') ||
+                    (_symbol == ' ')))
+                    return true;
+
+            if (_language == "translit" && (codeDictionary.ContainsKey(_symbol) || _symbol == ' ')) 
+                return true;
+            
+            return false;
         }
 
         //Функция шифрования сообщения 
         public string Code(char stringLetter)
         {
-            stringLetter = CharToUpper(stringLetter); //Перевод символа в верхний регистр
+            _symbol = stringLetter;
+            _symbol = Convert.ToChar(Convert.ToString(_symbol).ToUpper()); //Перевод символа в верхний регистр
 
-            //Если символ введен корректно, выполняем перевод
-            if (IsLetter(stringLetter) == true)
+            if (IsLetter())
             {
                 //Перевод символа в шифр 
-                if (codeDictionary.ContainsKey(stringLetter))
+                if (codeDictionary.ContainsKey(_symbol))
                 {
                     if (_language != "translit")
-                        return codeDictionary[stringLetter] + " ";
+                        return codeDictionary[_symbol] + " ";
                     
-                    return codeDictionary[stringLetter];
+                    return codeDictionary[_symbol];
                 }                  
-                else
-                {
-                    if (stringLetter == '\n')
-                        return "\n";
+                
+                if (_symbol == '\n')
+                    return "\n";
 
-                    //Если на вход попал пробел, возвращаем больший отступ между шифрами
-                    if (stringLetter == ' ')
-                        return "   ";
+                //Если на вход попал пробел, возвращаем больший отступ между шифрами
+                if (_symbol == ' ')
+                    return "   ";
 
-                    return null;
-                }
+                return null;             
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         //Функция расшифровки кода
         public char Decode(string shifr) 
         {
+            _shifr = shifr;
+
             //Если сообщение введено корректно (только '-' и '.'), выполняем перевод
-            if (IsCode(shifr[0]) == true)
+            if (IsCode())
             {
-                if (shifr[0] == ' ')
+                if (_shifr[0] == ' ')
                     return ' ';
 
-                if (shifr == "\n")
+                if (_shifr == "\n")
                     return '\n';
 
                 //Перевод шифра в символ
-                if (alphaviteDictionary.ContainsKey(shifr))
-                    return alphaviteDictionary[shifr];
-                else
-                {
-                    if (NotifyError != null)
-                        NotifyError("Invalid code!");
-                    else
-                        Console.WriteLine("Invalid code!");
+                if (alphaviteDictionary.ContainsKey(_shifr))
+                    return alphaviteDictionary[_shifr];
 
-                    return '\0';
-                }
-            }
-            else 
-            {
+                if (NotifyError != null)
+                    NotifyError("Invalid code!");
+                else
+                    Console.WriteLine("Invalid code!");
+
                 return '\0';
             }
+          
+            return '\0';
         }
     }
 }
